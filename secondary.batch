@@ -1,0 +1,33 @@
+sub.sample(fasta=good_groups.fasta, count=good_groups.count_table, persample=t, size=2000)
+
+dist.seqs(fasta=good_groups.subsample.fasta, output=lt, processors=8)
+
+clearcut(phylip=good_groups.subsample.phylip.dist)
+
+unifrac.unweighted(tree=good_groups.subsample.phylip.tre, count=good_groups.subsample.count_table, distance=lt, processors=8, random=f)
+
+pcoa(phylip=good_groups.subsample.phylip.tre1.unweighted.phylip.dist)
+
+unifrac.weighted(tree=good_groups.subsample.phylip.tre, count=good_groups.subsample.count_table, distance=lt, processors=8, random=f)
+
+pcoa(phylip=good_groups.subsample.phylip.tre1.weighted.phylip.dist)
+
+classify.seqs(fasta=good_groups.subsample.fasta, count=good_groups.subsample.count_table, template=/home/badgerjh/lib/ncbi_mothur/my.ncbi6.fasta, taxonomy=/home/badgerjh/lib/ncbi_mothur/my.ncbi7.tax, ksize=8, processors=8)
+
+classify.seqs(fasta=good_groups.subsample.fasta, count=good_groups.subsample.count_table, template=/home/badgerjh/lib/gg_mothur/gg_13_8_99.fasta, taxonomy=/home/badgerjh/lib/gg_mothur/gg_13_8_99.gg.tax, ksize=8, processors=8)
+
+classify.seqs(fasta=good_groups.subsample.fasta, count=good_groups.subsample.count_table, template=/home/badgerjh/lib/trainset10_082014.pds/trainset10_082014.pds.fasta, taxonomy=/home/badgerjh/lib/trainset10_082014.pds/trainset10_082014.pds.tax, ksize=8, processors=8)
+
+dist.seqs(fasta=good_groups.subsample.fasta, cutoff=0.20)
+
+cluster(column=good_groups.dist, count=good_groups.count_table)
+
+make.shared(list=good_groups.an.unique_list.list, count=good_groups.count_table, label=0.03)
+
+collect.single(shared=good_groups.an.unique_list.shared, abund=20, freq=10)
+
+rarefaction.single(shared=good_groups.an.unique_list.shared, abund=20, freq=10, processors=8)
+
+summary.single(shared=good_groups.an.unique_list.shared, subsample=2000)
+
+

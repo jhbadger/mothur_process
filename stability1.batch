@@ -1,0 +1,63 @@
+make.contigs(file=stability1.files, processors=8)
+
+screen.seqs(fasta=stability1.trim.contigs.fasta, group=stability1.contigs.groups, maxambig=0, maxlength=275)
+
+get.current()
+
+summary.seqs()
+
+unique.seqs(fasta=stability1.trim.contigs.good.fasta)
+
+count.seqs(name=stability1.trim.contigs.good.names, group=stability1.contigs.good.groups)
+
+summary.seqs(count=stability1.trim.contigs.good.count_table)
+
+align.seqs(fasta=stability1.trim.contigs.good.unique.fasta, reference=/home/badgerjh/lib/silva.bacteria.fasta, processors=8)
+
+summary.seqs(fasta=stability1.trim.contigs.good.unique.align, count=stability1.trim.contigs.good.count_table)
+
+screen.seqs(fasta=stability1.trim.contigs.good.unique.align, count=stability1.trim.contigs.good.count_table, summary=stability1.trim.contigs.good.unique.summary, start=13862, end=23444, maxhomop=8)
+
+summary.seqs(fasta=current, count=current, processors=8)
+
+filter.seqs(fasta=stability1.trim.contigs.good.unique.good.align, vertical=T, trump=.)
+
+unique.seqs(fasta=stability1.trim.contigs.good.unique.good.filter.fasta, count=stability1.trim.contigs.good.good.count_table)
+
+pre.cluster(fasta=stability1.trim.contigs.good.unique.good.filter.unique.fasta, count=stability1.trim.contigs.good.unique.good.filter.count_table, diffs=1)
+
+split.abund(fasta=stability1.trim.contigs.good.unique.good.filter.unique.precluster.fasta, count=stability1.trim.contigs.good.unique.good.filter.unique.precluster.count_table, cutoff=5)
+
+chimera.uchime(fasta=stability1.trim.contigs.good.unique.good.filter.unique.precluster.abund.fasta, count=stability1.trim.contigs.good.unique.good.filter.unique.precluster.abund.count_table, dereplicate=t, processors=8)
+
+remove.seqs(fasta=stability1.trim.contigs.good.unique.good.filter.unique.precluster.abund.fasta, count=stability1.trim.contigs.good.unique.good.filter.unique.precluster.abund.uchime.pick.count_table, accnos=stability1.trim.contigs.good.unique.good.filter.unique.precluster.abund.uchime.accnos)
+
+system(mv stability1.trim.contigs.good.unique.good.filter.unique.precluster.abund.pick.fasta nochimeras.fasta)
+
+system(mv stability1.trim.contigs.good.unique.good.filter.unique.precluster.abund.uchime.pick.pick.count_table nochimeras.count_table)
+
+system(/home/badgerjh/mothur_process/removeSingletons -i nochimeras.count_table -o singletons.accnos)
+
+remove.seqs(fasta=nochimeras.fasta, count=nochimeras.count_table, accnos=singletons.accnos)
+
+classify.seqs(fasta=nochimeras.pick.fasta, count=nochimeras.pick.count_table, template=/home/badgerjh/lib/ncbi_mothur/my.ncbi6.fasta, taxonomy=/home/badgerjh/lib/ncbi_mothur/my.ncbi7.tax, ksize=8, processors=8)
+
+classify.seqs(fasta=nochimeras.pick.fasta, count=nochimeras.pick.count_table, template=/home/badgerjh/lib/gg_mothur/gg_13_8_99.fasta, taxonomy=/home/badgerjh/lib/gg_mothur/gg_13_8_99.gg.tax, ksize=8, processors=8)
+
+classify.seqs(fasta=nochimeras.pick.fasta, count=nochimeras.pick.count_table, template=/home/badgerjh/lib/trainset10_082014.pds/trainset10_082014.pds.fasta, taxonomy=/home/badgerjh/lib/trainset10_082014.pds/trainset10_082014.pds.tax, ksize=8, processors=8)
+
+count.groups(count=nochimeras.pick.count_table)
+
+remove.groups(count=nochimeras.pick.count_table, fasta=nochimeras.pick.fasta, groups=Mock)
+
+system(mv nochimeras.pick.pick.fasta good_groups.fasta)
+
+system(mv nochimeras.pick.pick.count_table good_groups.count_table)
+
+count.groups(count=good_groups.count_table)
+
+classify.seqs(fasta=good_groups.fasta, count=good_groups.count_table, template=/home/badgerjh/lib/ncbi_mothur/my.ncbi6.fasta, taxonomy=/home/badgerjh/lib/ncbi_mothur/my.ncbi7.tax, ksize=8, processors=8)
+
+classify.seqs(fasta=good_groups.fasta, count=good_groups.count_table, template=/home/badgerjh/lib/gg_mothur/gg_13_8_99.fasta, taxonomy=/home/badgerjh/lib/gg_mothur/gg_13_8_99.gg.tax, ksize=8, processors=8)
+
+classify.seqs(fasta=good_groups.fasta, count=good_groups.count_table, template=/home/badgerjh/lib/trainset10_082014.pds/trainset10_082014.pds.fasta, taxonomy=/home/badgerjh/lib/trainset10_082014.pds/trainset10_082014.pds.tax, ksize=8, processors=8)
