@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+
+import argparse
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--input", required=True,
+                    help="input count.table")
+parser.add_argument("-o", "--output", required=True,
+                    help="output accnos table")
+args = parser.parse_args()
+
+out = open(args.output, "w")
+
+for line in open(args.input, "rU"):
+    fields = line.rstrip().split("\t")
+    if fields[0] != "Representative_Sequence":
+        count = 0
+        for field in fields[1:]:
+            if int(field)>0:
+                count += 1
+        if count < 2:
+            out.write(fields[0]+"\n")
+

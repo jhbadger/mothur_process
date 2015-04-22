@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+
+import glob
+import os
+
+def newest(expr):
+    return max(glob.glob(expr), key=os.path.getctime)
+
+ncbitax = "good_groups.ncbi7.wang.taxonomy"
+ncbitaxsummary = ncbitax.replace("taxonomy","tax.summary")
+groups = newest("*.groups")
+count = "good_groups.count_table"
+subcount = "good_groups.subsample.count_table"
+subncbitax = "good_groups.subsample.ncbi7.wang.taxonomy"
+subncbitaxsummary = subncbitax.replace("taxonomy","tax.summary")
+ggtax = ncbitax.replace("ncbi7","gg")
+subggtax = subncbitax.replace("ncbi7","gg")
+ggtaxsummary = ncbitaxsummary.replace("ncbi7","gg")
+subggtaxsummary = subncbitaxsummary.replace("ncbi7","gg")
+pdstax = ncbitax.replace("ncbi7","pds")
+subpdstax = subncbitax.replace("ncbi7","pds")
+pdstaxsummary = ncbitaxsummary.replace("ncbi7","pds")
+subpdstaxsummary = subncbitaxsummary.replace("ncbi7","pds")
+
+
+dirname = "final_files_%s" % os.path.getctime(ncbitax)
+if not os.path.isdir(dirname):
+    os.mkdir(dirname)
+
+os.link(ncbitax, dirname+"/final.ncbi7.taxonomy")
+os.link(ncbitaxsummary, dirname+"/final.ncbi7.tax.summary")
+os.link(ggtax, dirname+"/final.gg.taxonomy")
+os.link(ggtaxsummary, dirname+"/final.gg.tax.summary")
+os.link(pdstax, dirname+"/final.pds.taxonomy")
+os.link(pdstaxsummary, dirname+"/final.pds.tax.summary")
+os.link(groups, dirname+"/final.groups")
+os.link(count, dirname+"/final.count.table")
+os.link(subcount,  dirname+"/final.subsample.count.table")
+os.link(subncbitax,  dirname+"/final.ncbi7.subsample.taxonomy")
+os.link(subncbitaxsummary,  dirname+"/final.ncbi7.subsample.tax.summary")
+os.link(subggtax,  dirname+"/final.gg.subsample.taxonomy")
+os.link(subggtaxsummary,  dirname+"/final.gg.subsample.tax.summary")
+os.link(subpdstax,  dirname+"/final.gg.subsample.taxonomy")
+os.link(subpdstaxsummary,  dirname+"/final.pds.subsample.tax.summary")
+
+
