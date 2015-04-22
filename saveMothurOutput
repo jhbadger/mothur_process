@@ -40,7 +40,7 @@ os.link(subncbitax,  dirname+"/final.ncbi7.subsample.taxonomy")
 os.link(subncbitaxsummary,  dirname+"/final.ncbi7.subsample.tax.summary")
 os.link(subggtax,  dirname+"/final.gg.subsample.taxonomy")
 os.link(subggtaxsummary,  dirname+"/final.gg.subsample.tax.summary")
-os.link(subpdstax,  dirname+"/final.gg.subsample.taxonomy")
+os.link(subpdstax,  dirname+"/final.pds.subsample.taxonomy")
 os.link(subpdstaxsummary,  dirname+"/final.pds.subsample.tax.summary")
 
 
