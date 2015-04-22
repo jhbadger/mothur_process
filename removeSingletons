@@ -16,7 +16,7 @@ for line in open(args.input, "rU"):
     fields = line.rstrip().split("\t")
     if fields[0] != "Representative_Sequence":
         count = 0
-        for field in fields[1:]:
+        for field in fields[2:]:
             if int(field)>0:
                 count += 1
         if count < 2:
