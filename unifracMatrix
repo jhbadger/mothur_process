@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+import argparse
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--input", required=True,
+                    help="input unifract summary")
+parser.add_argument("-o", "--output", required=True,
+                    help="output matrix.tsv")
+args = parser.parse_args()
+
+out = open(args.output, "w")
+
+matrix = dict()
+for line in open(args.input, "rU"):
+    if line != "":
+        num, groups, score = line.rstrip().split("\t")
+        if num != "Tree#":
+            first, second = groups.split("-")
+            if first not in matrix.keys():
+                matrix[first] = dict()
+            matrix[first][second] = score
+            if second not in matrix.keys():
+                matrix[second] = dict()
+            matrix[second][first] = score
+
+out.write("\t"+"\t".join(sorted(matrix.keys()))+"\n")
+
+for key1 in sorted(matrix.keys()):
+    out.write(key1)
+    for key2 in sorted(matrix.keys()):
+        if key1==key2:
+            matrix[key1][key2] = "0.000000"
+        out.write("\t"+matrix[key1][key2])
+    out.write("\n")
+
+out.close()
