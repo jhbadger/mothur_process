@@ -7,10 +7,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", required=True, help="input mothur taxsummary")
 parser.add_argument("-n", "--number", default=100000, type = int, 
                     help="number to normalize to (default 100000)")
+parser.add_argument("-j", "--join", help = "join metadata csv file")
 parser.add_argument("-s", "--split", action='store_true',
                     help = "split file into phylum, class, order, etc.")
 args = parser.parse_args()
 
+if args.join:
+    meta = pd.read_csv(args.join, index_col=0)
+else:
+    meta = pd.DataFrame()
 
 taxsummary = pd.read_csv(args.input, sep="\t")
 taxsummary.set_index(" taxon", drop = False)
@@ -35,17 +40,25 @@ taxsummary.drop(" total", 1, inplace=True)
 taxsummary.drop("taxlevel", 1, inplace=True)
 taxsummary.drop(" rankID", 1, inplace=True)
 taxsummary.drop(" daughterlevels", 1, inplace=True)
+
 partek = taxsummary.transpose()
 partek.columns = taxsummary[" taxon"]
 partek = partek[partek.Root != "Root"]
 partek.drop("Root", 1, inplace=True)
 partek.index.name = "Sample"
 partek = partek.query("k__Bacteria > 0")
+classified = filter(lambda x: x != "unclassified", partek.columns)
+partek = partek[classified]
+
+if args.join:
+    partek = pd.merge(meta, partek, how = "inner", left_index=True, 
+                      right_index=True,sort = False) 
 partek.to_csv(args.input.replace(".summary", ".normalized.csv"))
 
 if args.split:
     for level in ['phylum', 'class', 'order', 'family', 'genus', 'species']:
-        cols = filter(lambda x: level[0]+"__" in x, partek.columns)
+        cols = list(meta.columns)
+        cols += filter(lambda x: level[0]+"__" in x, partek.columns)
         t = partek[cols]
         t.to_csv(args.input.replace(".summary", "."+level+".normalized.csv"))
 
