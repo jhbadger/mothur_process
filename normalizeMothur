@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+
+import argparse
+import pandas as pd
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--input", required=True, help="input mothur taxsummary")
+parser.add_argument("-n", "--number", default=100000, type = int, 
+                    help="number to normalize to (default 100000)")
+parser.add_argument("-s", "--split", action='store_true',
+                    help = "split file into phylum, class, order, etc.")
+args = parser.parse_args()
+
+
+taxsummary = pd.read_csv(args.input, sep="\t")
+taxsummary.set_index(" taxon", drop = False)
+cols = list(taxsummary.columns)
+totpos = cols.index(" total")
+
+samples = filter(lambda x: "Unnamed:" not in x, cols[totpos+1:])
+
+for sample in samples:
+    m = taxsummary[sample].max()
+    factor = args.number/(1.0*m)
+    taxsummary[sample] = map(lambda x: int(round(x)), 
+                              taxsummary[sample]*factor)
+
+taxsummary[" total"] = map(lambda x: int(round(x)), 
+                           taxsummary[" total"]*factor)
+
+taxsummary.to_csv(args.input.replace(".summary", ".normalized.summary"),
+                  sep = "\t", index=False)
+
+taxsummary.drop(" total", 1, inplace=True)
+taxsummary.drop("taxlevel", 1, inplace=True)
+taxsummary.drop(" rankID", 1, inplace=True)
+taxsummary.drop(" daughterlevels", 1, inplace=True)
+partek = taxsummary.transpose()
+partek.columns = taxsummary[" taxon"]
+partek = partek[partek.Root != "Root"]
+partek.drop("Root", 1, inplace=True)
+partek.index.name = "Sample"
+partek = partek.query("k__Bacteria > 0")
+partek.to_csv(args.input.replace(".summary", ".normalized.csv"))
+
+if args.split:
+    for level in ['phylum', 'class', 'order', 'family', 'genus', 'species']:
+        cols = filter(lambda x: level[0]+"__" in x, partek.columns)
+        t = partek[cols]
+        t.to_csv(args.input.replace(".summary", "."+level+".normalized.csv"))
+
