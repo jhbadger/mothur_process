@@ -44,8 +44,9 @@ taxsummary.drop(" daughterlevels", 1, inplace=True)
 
 partek = taxsummary.transpose()
 partek.columns = taxsummary[" taxon"]
-partek = partek[partek.Root != "Root"]
-partek.drop("Root", 1, inplace=True)
+if "Root" in partek.columns:
+    partek = partek[partek.Root != "Root"]
+    partek.drop("Root", 1, inplace=True)
 partek.index.name = "Sample"
 partek = partek.query("k__Bacteria > 0")
 classified = filter(lambda x: x != "unclassified", partek.columns)
@@ -53,7 +54,9 @@ partek = partek[classified]
 
 if args.join:
     partek = pd.merge(meta, partek, how = "inner", left_index=True, 
-                      right_index=True,sort = False) 
+                      right_index=True,sort = False)
+if " taxon" in partek.index:
+    partek.drop(" taxon", 0, inplace=True) 
 partek.to_csv(args.input.replace(".summary", ".normalized.csv"))
 
 if args.split:
