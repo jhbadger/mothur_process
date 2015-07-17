@@ -24,8 +24,9 @@ totpos = cols.index(" total")
 
 samples = filter(lambda x: "Unnamed:" not in x, cols[totpos+1:])
 
+kingdoms = filter(lambda x: "k__" in x, taxsummary[" taxon"])
 for sample in samples:
-    m = taxsummary[sample].max()
+    m = sum(taxsummary.loc[taxsummary[" taxon"].isin(kingdoms)][sample])
     factor = args.number/(1.0*m)
     taxsummary[sample] = map(lambda x: int(round(x)), 
                               taxsummary[sample]*factor)
