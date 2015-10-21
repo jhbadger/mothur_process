@@ -7,57 +7,45 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", required=True, help="input mothur taxsummary")
 parser.add_argument("-n", "--number", default=100000, type = int, 
                     help="number to normalize to (default 100000)")
-parser.add_argument("-j", "--join", help = "join metadata csv file")
+parser.add_argument("-r", "--rdp", help = "use rdp taxonomy", action='store_true')
 parser.add_argument("-s", "--split", action='store_true',
                     help = "split file into phylum, class, order, etc.")
 args = parser.parse_args()
 
-if args.join:
-    meta = pd.read_csv(args.join, index_col=0)
-else:
-    meta = pd.DataFrame()
-
+meta = pd.DataFrame()
 taxsummary = pd.read_csv(args.input, sep="\t")
-taxsummary.set_index(" taxon", drop = False)
+taxsummary.set_index("taxon", drop = False)
 cols = list(taxsummary.columns)
-totpos = cols.index(" total")
+totpos = cols.index("total")
 
 samples = filter(lambda x: "Unnamed:" not in x, cols[totpos+1:])
+taxa = taxsummary["taxon"]
 
-kingdoms = filter(lambda x: "k__" in x, taxsummary[" taxon"])
+if args.rdp:
+    tnames = ["r","k","p","c","o","f","g"]
+    l = taxsummary["taxlevel"]
+    t = [""]*len(taxa)
+    for i in range(0, len(taxa)):
+        t[i] = tnames[l[i]]+"__"+taxa[i]
+    taxsummary["taxon"] = t
+
+kingdoms=list(filter(lambda x: x[0:3]=="k__", list(taxa)))
 for sample in samples:
-    m = sum(taxsummary.loc[taxsummary[" taxon"].isin(kingdoms)][sample])
+    m =  sum(taxsummary[taxsummary['taxon'].isin(kingdoms)][sample])
     factor = args.number/(1.0*m)
-    taxsummary[sample] = map(lambda x: int(round(x)), 
-                              taxsummary[sample]*factor)
+    taxsummary[sample] = list(map(lambda x: int(round(x)), 
+                              taxsummary[sample]*factor))
 
-taxsummary[" total"] = map(lambda x: int(round(x)), 
-                           taxsummary[" total"]*factor)
+taxsummary["total"] = list(map(lambda x: int(round(x)), 
+                           taxsummary["total"]*factor))
 
 taxsummary.to_csv(args.input.replace(".summary", ".normalized.summary"),
                   sep = "\t", index=False)
 
-taxsummary.drop(" total", 1, inplace=True)
+taxsummary.drop("total", 1, inplace=True)
 taxsummary.drop("taxlevel", 1, inplace=True)
-taxsummary.drop(" rankID", 1, inplace=True)
-taxsummary.drop(" daughterlevels", 1, inplace=True)
-
-partek = taxsummary.transpose()
-partek.columns = taxsummary[" taxon"]
-if "Root" in partek.columns:
-    partek = partek[partek.Root != "Root"]
-    partek.drop("Root", 1, inplace=True)
-partek.index.name = "Sample"
-partek = partek.query("k__Bacteria > 0")
-classified = filter(lambda x: x != "unclassified", partek.columns)
-partek = partek[classified]
-
-if args.join:
-    partek = pd.merge(meta, partek, how = "inner", left_index=True, 
-                      right_index=True,sort = False)
-if " taxon" in partek.index:
-    partek.drop(" taxon", 0, inplace=True) 
-partek.to_csv(args.input.replace(".summary", ".normalized.csv"))
+taxsummary.drop("rankID", 1, inplace=True)
+taxsummary.drop("daughterlevels", 1, inplace=True)
 
 if args.split:
     for level in ['phylum', 'class', 'order', 'family', 'genus', 'species']:
